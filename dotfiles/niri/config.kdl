@@ -1,0 +1,228 @@
+// ~/.config/niri/config.kdl  -- Dragon (niri 26.04+, needed for blur)
+// Validate after editing:  niri validate
+
+// Focus-ring colours follow Noctalia's light/dark palette (rendered from a template).
+include optional=true "noctalia-colors.kdl"
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+        }
+        numlock
+    }
+    touchpad {
+        tap
+        natural-scroll
+        dwt
+    }
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+// Set your monitor here if needed. Find names with: niri msg outputs
+// output "eDP-1" {
+//     scale 1.25
+// }
+
+layout {
+    gaps 12
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+    default-column-width { proportion 0.5; }
+
+    focus-ring {
+        on
+        width 2
+        active-color "#b69cff"
+        inactive-color "#5a4d94"
+        urgent-color "#ff5c6c"
+    }
+    border { off; }
+
+    shadow {
+        on
+        softness 30
+        spread 4
+        offset x=0 y=8
+        color "#00000055"
+    }
+}
+
+prefer-no-csd
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+environment {
+    XDG_CURRENT_DESKTOP "niri"
+    QT_QPA_PLATFORM "wayland"
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+}
+
+// Global blur strength (defaults shown, tweak to taste).
+blur {
+    passes 3
+    offset 3
+    noise 0.02
+    saturation 1.5
+}
+
+// ───────────── Startup ─────────────
+spawn-at-startup "noctalia"
+spawn-sh-at-startup "swayidle -w timeout 600 glass-lock timeout 900 'niri msg action power-off-monitors' resume 'niri msg action power-on-monitors' before-sleep glass-lock"
+
+// ───────────── Window rules: rounded, blurred "glass" ─────────────
+window-rule {
+    geometry-corner-radius 14
+    clip-to-geometry true
+    background-effect {
+        xray false
+        blur true
+    }
+}
+
+// Terminals are translucent; blur shows through.
+window-rule {
+    match app-id="^kitty$"
+    opacity 0.92
+}
+
+// Noctalia settings window floats.
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+// The AI launchers (see ~/.local/bin/ai-claude, ai-antigravity) open as floating panels.
+window-rule {
+    match app-id="^ai-claude$"
+    match app-id="^ai-antigravity-cli$"
+    open-floating true
+    default-column-width { fixed 1100; }
+    default-window-height { fixed 720; }
+}
+
+// Quick notes (COSMIC Edit) floats, like a notepad.
+window-rule {
+    match app-id="^com\\.system76\\.CosmicEdit$"
+    open-floating true
+    default-column-width { fixed 760; }
+    default-window-height { fixed 640; }
+}
+
+// ───────────── Layer rules: blur behind Noctalia surfaces ─────────────
+layer-rule {
+    match namespace="^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="noctalia-window-switcher"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Notification actions / window activation from Noctalia (per its docs).
+debug {
+    honor-xdg-activation-with-invalid-serial
+}
+
+// ───────────── Keybinds ─────────────
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    // Launch
+    Mod+Return hotkey-overlay-title="Terminal" { spawn "kitty"; }
+    Mod+Space  hotkey-overlay-title="Command bar" { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Mod+S      hotkey-overlay-title="Control center" { spawn-sh "noctalia msg panel-toggle control-center"; }
+    Mod+Comma  hotkey-overlay-title="Shell settings" { spawn-sh "noctalia msg settings-toggle"; }
+    Alt+Tab    { spawn-sh "noctalia msg window-switcher hold"; }
+
+    // AI
+    Mod+Shift+C hotkey-overlay-title="Claude Code" { spawn "ai-claude"; }
+    Mod+Shift+A hotkey-overlay-title="Antigravity" { spawn "ai-antigravity"; }
+
+    // COSMIC apps
+    Mod+E hotkey-overlay-title="Files" { spawn "cosmic-files"; }
+    Mod+N hotkey-overlay-title="Notepad" { spawn "cosmic-edit"; }
+    Mod+Shift+P hotkey-overlay-title="Media player" { spawn "cosmic-player"; }
+
+    // Lock (swaylock with blurred-glass screenshot)
+    Mod+L hotkey-overlay-title="Lock screen" { spawn "glass-lock"; }
+
+    // Theme
+    Mod+Shift+T hotkey-overlay-title="Toggle light/dark" { spawn-sh "noctalia msg theme-mode-toggle"; }
+
+    // Screenshots
+    Print          { spawn-sh "noctalia msg screenshot-region"; }
+    Ctrl+Print     { screenshot-screen; }
+    Alt+Print      { screenshot-window; }
+    Mod+Shift+S    hotkey-overlay-title="COSMIC screenshot" { spawn "cosmic-screenshot"; }
+
+    // Audio / brightness
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "noctalia msg volume-up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "noctalia msg volume-down"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "noctalia msg volume-mute"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn-sh "noctalia msg brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "noctalia msg brightness-down"; }
+
+    // Windows
+    Mod+Q { close-window; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+V { toggle-window-floating; }
+    Mod+R { switch-preset-column-width; }
+    Mod+C { center-column; }
+    Mod+O { toggle-overview; }
+
+    // Focus & move (arrows and vim keys)
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-down; }
+    Mod+K     { focus-window-up; }
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Down  { move-window-down; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+H     { move-column-left; }
+    Mod+Shift+J     { move-window-down; }
+    Mod+Shift+K     { move-window-up; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+
+    // Workspaces
+    Mod+Page_Down { focus-workspace-down; }
+    Mod+Page_Up   { focus-workspace-up; }
+    Mod+Shift+Page_Down { move-column-to-workspace-down; }
+    Mod+Shift+Page_Up   { move-column-to-workspace-up; }
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+
+    // Session
+    Mod+Shift+E { quit; }
+    Mod+Shift+Q { spawn-sh "noctalia msg panel-toggle session"; }
+}

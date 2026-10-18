@@ -1,0 +1,136 @@
+# ~/.config/noctalia/config.toml  -- Dragon
+# Noctalia v5 reads every *.toml in this folder and hot-reloads on save.
+# Anything you change in the Settings app lands in ~/.local/state/noctalia/settings.toml
+# and WINS over this file. If a value here seems ignored, check that file.
+# Check your edits with:  noctalia config validate
+#
+# @HOME@ is replaced with your home directory by install.sh.
+
+# ───────────────────────── Theme: purple + red, light & dark ─────────────────────────
+[theme]
+mode            = "dark"          # dark | light | auto (auto = sunrise/sunset, needs [location])
+shell_mode      = "follow"        # bar/panels follow `mode`
+source          = "custom"
+custom_palette  = "Dragon"     # ~/.config/noctalia/palettes/Dragon.json
+
+# Our own templates (opt-in). They re-render on every mode/palette change,
+# which is how swaylock, kitty and niri's focus ring follow light/dark.
+[theme.templates]
+enable_builtin_templates   = false
+enable_community_templates = false
+
+[theme.templates.user.swaylock]
+input_path  = "@HOME@/.config/noctalia/templates/swaylock.conf"
+output_path = "@HOME@/.config/swaylock/config"
+
+[theme.templates.user.kitty]
+input_path  = "@HOME@/.config/noctalia/templates/kitty.conf"
+output_path = "@HOME@/.config/kitty/noctalia.conf"
+post_hook   = "pkill -USR1 -x kitty || true"
+
+[theme.templates.user.niri]
+input_path  = "@HOME@/.config/noctalia/templates/niri-colors.kdl"
+output_path = "@HOME@/.config/niri/noctalia-colors.kdl"
+
+# ───────────────────────── Glass shell ─────────────────────────
+[shell]
+font_family                 = "Inter"
+corner_radius_scale         = 1.5
+popup_shadows               = true
+settings_window_translucent = true
+
+[shell.panel]
+transparency_mode        = "glass"      # solid | soft | glass
+control_center_placement = "attached"   # pulls down from the bar, like the demo
+borders                  = true
+border_width             = 1.0
+
+[shell.launcher]
+width           = 720
+search_position = "top"
+default_view    = "recent"
+
+# ───────────────────────── Top bar (floating glass) ─────────────────────────
+[bar]
+order = ["default"]
+
+[bar.default]
+position           = "top"
+enabled            = true
+background_opacity = 0.55
+compositor_blur    = true
+radius             = 16
+margin_edge        = 8
+margin_ends        = 12
+
+start  = ["launcher", "workspaces", "active-window"]
+center = ["clock"]
+# AI section sits between the spacers: [ Claude ][ Antigravity ]
+end    = ["media", "gap-a", "ai-claude", "ai-antigravity", "gap-b",
+          "tray", "network", "bluetooth", "volume", "battery",
+          "theme-mode", "control-center", "session"]
+
+[widget.gap-a]
+type    = "spacer"
+capsule = false
+
+[widget.gap-b]
+type    = "spacer"
+capsule = false
+
+# ── AI section ──
+# Left click = open, right click = secondary action.
+[widget.ai-claude]
+type    = "custom_button"
+glyph   = "sparkles"
+label   = "Claude"
+tooltip = "Claude Code (right-click: continue last session)"
+capsule = true
+color   = "secondary"
+
+[widget.ai-claude.actions]
+left  = "exec /usr/local/bin/ai-claude"
+right = "exec /usr/local/bin/ai-claude --continue"
+
+[widget.ai-antigravity]
+type    = "custom_button"
+glyph   = "rocket"
+label   = "Antigravity"
+tooltip = "Antigravity (right-click: CLI agent)"
+capsule = true
+color   = "primary"
+
+[widget.ai-antigravity.actions]
+left  = "exec /usr/local/bin/ai-antigravity"
+right = "exec /usr/local/bin/ai-antigravity --cli"
+
+# ───────────────────────── Floating dock ─────────────────────────
+[dock]
+enabled            = true
+position           = "bottom"
+margin_edge        = 10
+radius             = 22
+background_opacity = 0.5
+icon_size          = 44
+show_dots          = true
+pinned = [
+  "kitty",
+  "com.system76.CosmicFiles",
+  "com.system76.CosmicEdit",
+  "firefox",
+  "antigravity",
+  "com.system76.CosmicPlayer",
+  "com.system76.CosmicStore",
+]
+
+# ───────────────────────── Lock screen ─────────────────────────
+# Super+L and idle use swaylock (glass-lock). Noctalia's own lock stays available from
+# the session menu as a fallback, styled to match, but it must not also fire on suspend.
+[lockscreen]
+lock_before_suspend = false
+blurred_desktop     = true
+
+# ───────────────────────── Hooks ─────────────────────────
+[hooks]
+started            = "/usr/local/bin/dragon-sync-theme"
+theme_mode_changed = "/usr/local/bin/dragon-sync-theme"

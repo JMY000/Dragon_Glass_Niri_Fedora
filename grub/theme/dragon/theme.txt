@@ -1,0 +1,70 @@
+# Dragon GRUB theme (dark; a bootloader cannot follow the desktop light/dark switch).
+# The frosted panel is baked into background.png. Its position matches the percentages below.
+
+title-text: ""
+desktop-image: "background.png"
+desktop-image-scale-method: "stretch"
+desktop-color: "#14102a"
+terminal-font: "Dragon UI Regular 16"
+terminal-left: "8%"
+terminal-top: "10%"
+terminal-width: "84%"
+terminal-height: "80%"
+terminal-border: "0"
+
+# Title
++ label {
+    left = 27%
+    top = 28%
+    width = 46%
+    align = "center"
+    text = "Choose an operating system"
+    font = "Dragon UI Regular 30"
+    color = "#ece8ff"
+}
+
+# The menu
++ boot_menu {
+    left = 31%
+    top = 37%
+    width = 38%
+    height = 30%
+    item_font = "Dragon UI Regular 20"
+    selected_item_font = "Dragon UI Regular 20"
+    item_color = "#c9c1ee"
+    selected_item_color = "#ffffff"
+    icon_width = 32
+    icon_height = 32
+    item_icon_space = 16
+    item_height = 36
+    item_padding = 14
+    item_spacing = 28
+    item_pixmap_style = "item_*.png"
+    selected_item_pixmap_style = "select_*.png"
+    scrollbar = true
+    scrollbar_width = 6
+    scrollbar_thumb = "#b69cff"
+}
+
+# Countdown
++ label {
+    id = "__timeout__"
+    left = 27%
+    top = 69%
+    width = 46%
+    align = "center"
+    text = "Booting in %d seconds"
+    font = "Dragon UI Regular 16"
+    color = "#b69cff"
+}
+
+# Key hints
++ label {
+    left = 27%
+    top = 72%
+    width = 46%
+    align = "center"
+    text = "Up/Down  select      Enter  boot      E  edit      C  console"
+    font = "Dragon UI Regular 16"
+    color = "#8f84c4"
+}
