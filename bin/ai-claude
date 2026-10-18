@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# ai-claude: open Claude Code in a floating terminal. Extra args go to `claude`
+# (for example `ai-claude --continue` resumes the last session).
+# Starts in $AI_DIR, or your home folder. The niri window-rule matches app-id "ai-claude".
+dir="${AI_DIR:-$HOME}"
+exec kitty --class ai-claude --directory "$dir" -e claude "$@"

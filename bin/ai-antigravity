@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# ai-antigravity: open the Antigravity app, or with --cli its terminal agent (`agy`).
+if [ "${1:-}" = "--cli" ]; then
+    shift
+    dir="${AI_DIR:-$HOME}"
+    exec kitty --class ai-antigravity-cli --directory "$dir" -e agy "$@"
+fi
+
+for bin in antigravity antigravity-ide; do
+    if command -v "$bin" >/dev/null; then exec "$bin" "$@"; fi
+done
+
+notify-send -a "AI" "Antigravity is not installed" "Run optional/install-antigravity.sh from the dragon folder."
+exit 1

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# dragon-sync-theme: run by Noctalia hooks (`started` and `theme_mode_changed`).
+# Makes everything outside Noctalia follow its light/dark mode:
+#   - GTK / libadwaita / portal-aware apps (gsettings color-scheme)
+#   - COSMIC apps (libcosmic reads its own config; written as a best effort)
+#   - the wallpaper (light and dark variants)
+set -u
+
+# On shell start (not a mode change) make sure our templates are rendered once.
+[ -z "${NOCTALIA_THEME_MODE:-}" ] && noctalia msg templates-apply >/dev/null 2>&1
+
+mode="${NOCTALIA_THEME_MODE:-$(noctalia msg theme-mode-get 2>/dev/null || echo dark)}"
+wp_dir="$HOME/.local/share/wallpapers/dragon"
+
+if [ "$mode" = "light" ]; then
+    scheme="prefer-light"; is_dark="false"; gtk_theme="Adwaita"
+else
+    mode="dark"
+    scheme="prefer-dark"; is_dark="true"; gtk_theme="Adwaita-dark"
+fi
+
+if command -v gsettings >/dev/null; then
+    gsettings set org.gnome.desktop.interface color-scheme "$scheme" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface gtk-theme "$gtk_theme" 2>/dev/null || true
+fi
+
+cosmic_dir="$HOME/.config/cosmic/com.system76.CosmicTheme.Mode/v1"
+mkdir -p "$cosmic_dir"
+printf '%s' "$is_dark" > "$cosmic_dir/is_dark"
+
+if [ -f "$wp_dir/dragon-$mode.jpg" ]; then
+    noctalia msg wallpaper-set "$wp_dir/dragon-$mode.jpg" 2>/dev/null || true
+fi

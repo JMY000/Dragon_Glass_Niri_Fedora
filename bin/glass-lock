@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# glass-lock: swaylock over a blurred, tinted screenshot of each monitor ("frosted glass").
+# Colours/ring styling come from ~/.config/swaylock/config, which Noctalia re-renders
+# whenever you switch light/dark. Bound to Super+L and used by swayidle.
+set -u
+
+pgrep -x swaylock >/dev/null && exit 0
+
+dir="${XDG_RUNTIME_DIR:-/tmp}/glass-lock"
+mkdir -p "$dir"
+
+mode="$(noctalia msg theme-mode-get 2>/dev/null || echo dark)"
+if [ "$mode" = "light" ]; then tint="#f6f1ff"; amount="35%"; else tint="#14102a"; amount="45%"; fi
+
+magick_bin="$(command -v magick || command -v convert || true)"
+args=()
+
+if [ -n "$magick_bin" ] && command -v grim >/dev/null && command -v jq >/dev/null; then
+    outputs="$(niri msg --json outputs 2>/dev/null | jq -r 'keys[]' 2>/dev/null || true)"
+    for out in $outputs; do
+        img="$dir/$out.png"
+        # Shrink -> blur -> grow is much faster than a big blur and looks softer.
+        if grim -o "$out" -t ppm - 2>/dev/null \
+            | "$magick_bin" ppm:- -scale 10% -blur 0x2 -scale 1000% \
+                -fill "$tint" -colorize "$amount" "png:$img" 2>/dev/null; then
+            args+=(-i "$out:$img")
+        fi
+    done
+fi
+
+# If anything above failed, swaylock still locks with the themed solid colour.
+exec swaylock -f "${args[@]}"
